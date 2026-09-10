@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Screening Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Screening Results</h1>
+        <a class="back-link" href="{{ url_for('index') }}">&larr; Screen another batch</a>
+
+        <details class="jd-box">
+            <summary>Job Description — extracted requirements</summary>
+            <p><strong>Required skills:</strong> {{ jd.skills | join(', ') if jd.skills else 'none detected' }}</p>
+            <p><strong>Required experience:</strong> {{ jd.experience_years }} years</p>
+            <p><strong>Education:</strong> {{ jd.education | join(', ') if jd.education else 'none detected' }}</p>
+        </details>
+
+        <h2>Ranked Candidates</h2>
+        <div class="table-scroll">
+        <table class="rank-table detailed-table">
+            <thead>
+                <tr>
+                    <th rowspan="2">#</th>
+                    <th rowspan="2">Candidate</th>
+                    <th rowspan="2">GitHub</th>
+                    <th rowspan="2">LinkedIn</th>
+                    <th rowspan="2">Resume</th>
+                    <th rowspan="2">Skills %</th>
+                    <th rowspan="2">Experience %</th>
+                    <th rowspan="2">Education %</th>
+                    <th rowspan="2">Summary %</th>
+                    <th rowspan="2">Overall %</th>
+                    <th colspan="2">Skills Description</th>
+                </tr>
+                <tr>
+                    <th>Matched</th>
+                    <th>Not Matched</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ r.candidate }}</td>
+                    <td>
+                        {% if r.parsed.github %}
+                            <a href="{{ r.parsed.github }}" target="_blank" rel="noopener">View</a>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>
+                        {% if r.parsed.linkedin %}
+                            <a href="{{ r.parsed.linkedin }}" target="_blank" rel="noopener">View</a>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>
+                        {% if r.resume_url %}
+                            <a href="{{ r.resume_url }}" target="_blank" rel="noopener">View</a>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>{{ r.sections.skills.score_pct }}%</td>
+                    <td>{{ r.sections.experience.score_pct }}%</td>
+                    <td>{{ r.sections.education.score_pct }}%</td>
+                    <td>{{ r.sections.summary.score_pct }}%</td>
+                    <td>
+                        <div class="score-bar-wrap">
+                            <div class="score-bar" style="width: {{ r.overall_match_pct }}%;"></div>
+                            <span>{{ r.overall_match_pct }}%</span>
+                        </div>
+                    </td>
+                    <td class="remarks-cell matched-cell">{{ r.matched_summary }}</td>
+                    <td class="remarks-cell missing-cell">{{ r.not_matched_summary }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+        <h2>Detailed Breakdown</h2>
+        {% for r in reports %}
+        <div class="candidate-card">
+            <h3>{{ r.candidate }} — <span class="overall">{{ r.overall_match_pct }}% match</span></h3>
+
+            <div class="section">
+                <h4>Skills — {{ r.sections.skills.score_pct }}%</h4>
+                <p class="matched"><strong>Matched:</strong>
+                    {% if r.sections.skills.matched %}
+                        {% for s in r.sections.skills.matched %}<span class="tag tag-match">{{ s }}</span>{% endfor %}
+                    {% else %}none{% endif %}
+                </p>
+                <p class="missing"><strong>Missing:</strong>
+                    {% if r.sections.skills.missing %}
+                        {% for s in r.sections.skills.missing %}<span class="tag tag-missing">{{ s }}</span>{% endfor %}
+                    {% else %}none{% endif %}
+                </p>
+            </div>
+
+            <div class="section">
+                <h4>Experience — {{ r.sections.experience.score_pct }}%</h4>
+                <p>Required: {{ r.sections.experience.required_years }} yrs |
+                   Candidate: {{ r.sections.experience.candidate_years }} yrs |
+                   Meets requirement:
+                   {% if r.sections.experience.meets_requirement %}
+                     <span class="tag tag-match">yes</span>
+                   {% else %}
+                     <span class="tag tag-missing">no</span>
+                   {% endif %}
+                </p>
+            </div>
+
+            <div class="section">
+                <h4>Education — {{ r.sections.education.score_pct }}%</h4>
+                <p><strong>Matched:</strong>
+                    {% if r.sections.education.matched %}
+                        {% for e in r.sections.education.matched %}<span class="tag tag-match">{{ e }}</span>{% endfor %}
+                    {% else %}none{% endif %}
+                </p>
+                <p><strong>Missing:</strong>
+                    {% if r.sections.education.missing %}
+                        {% for e in r.sections.education.missing %}<span class="tag tag-missing">{{ e }}</span>{% endfor %}
+                    {% else %}none{% endif %}
+                </p>
+            </div>
+
+            <div class="section">
+                <h4>Summary similarity — {{ r.sections.summary.score_pct }}%</h4>
+                <p class="summary-text">{{ r.parsed.summary }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume Screening App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Resume Screening App</h1>
+        <p class="subtitle">Match resumes against a job description — skills, experience, education, and summary similarity.</p>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash">
+              {% for message in messages %}<p>{{ message }}</p>{% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('screen') }}" method="post" enctype="multipart/form-data">
+            <fieldset>
+                <legend>1. Job Description</legend>
+                <label for="jd_text">Paste JD text</label>
+                <textarea id="jd_text" name="jd_text" rows="8" placeholder="Paste the job description here..."></textarea>
+                <p class="or">— or —</p>
+                <label for="jd_file">Upload JD file (.txt, .pdf, .docx)</label>
+                <input type="file" id="jd_file" name="jd_file" accept=".txt,.pdf,.docx">
+            </fieldset>
+
+            <fieldset>
+                <legend>2. Resumes</legend>
+                <label for="resume_files">Upload one or more resumes (.txt, .pdf, .docx)</label>
+                <input type="file" id="resume_files" name="resume_files" accept=".txt,.pdf,.docx" multiple required>
+            </fieldset>
+
+            <button type="submit">Screen Resumes</button>
+        </form>
+    </div>
+</body>
+</html>
